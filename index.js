@@ -29,10 +29,19 @@ const run = async () => {
 
 
         app.get("/services", async (req, res) => {
-            const query = {}
-            const cursor = servicesCollection.find(query).sort({ date: -1 })
-            const result = await cursor.toArray()
-            res.send(result)
+            let query = {}
+            const limit = parseInt(req.query.limit)
+            console.log(limit)
+            if (limit) {
+                const cursor = servicesCollection.find(query).sort({ date: -1 }).limit(limit)
+                const result = await cursor.toArray()
+                res.send(result)
+            }
+            else {
+                const cursor = servicesCollection.find(query).sort({ date: -1 })
+                const result = await cursor.toArray()
+                res.send(result)
+            }
         })
         app.post("/addService", async (req, res) => {
             const service = req.body
