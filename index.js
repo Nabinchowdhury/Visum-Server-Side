@@ -88,6 +88,7 @@ const run = async () => {
             res.send(result)
         })
         app.get("/reviews", verifyToken, async (req, res) => {
+            const decoded = req.decoded
             let query = {}
             const service = req.query.service
             const email = req.query.email
@@ -95,6 +96,9 @@ const run = async () => {
                 query = { service_id: service }
             }
             if (email) {
+                if (decoded.email !== email) {
+                    return res.status(403).send({ message: "Unauthorized Access" })
+                }
                 query = { reviewer_email: email }
             }
             const cursor = reviewsCollection.find(query).sort({ date: -1 })
@@ -109,13 +113,13 @@ const run = async () => {
             const result = await reviewsCollection.findOne(query)
             res.send(result)
         })
-        app.delete("/reviews/:id", async (req, res) => {
+        app.delete("/reviews/:id", verifyToken, async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const result = await reviewsCollection.deleteOne(query)
             res.send(result)
         })
-        app.patch("/reviews/:id", async (req, res) => {
+        app.patch("/reviews/:id", verifyToken, async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const reviewMsg = req.body.reviewMsg
