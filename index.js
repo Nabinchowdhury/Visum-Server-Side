@@ -1,7 +1,7 @@
 const express = require("express")
 const cors = require("cors")
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require("jsonwebtoken")
 
 const app = express()
@@ -14,12 +14,12 @@ app.listen(port, () => {
     console.log(`Server is listening to port ${port}`)
 })
 app.get("/", (req, res) => {
-
     res.send("Service Review Server is Running")
 })
 
 const uri = process.env.DB_URL;
 // console.log(uri)
+// console.log(process.env.Access_Token_Secret)
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -48,6 +48,14 @@ const run = async () => {
             const service = req.body
 
             const result = await servicesCollection.insertOne(service)
+            res.send(result)
+        })
+
+        app.get("/services/:id", async (req, res) => {
+            const id = req.params.id
+
+            const query = { _id: ObjectId(id) }
+            const result = await servicesCollection.findOne(query)
             res.send(result)
         })
 
