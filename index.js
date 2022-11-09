@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors")
 require('dotenv').config()
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const jwt = require("jsonwebtoken")
 
 const app = express()
 const port = process.env.PORT || 5000
@@ -31,7 +32,7 @@ const run = async () => {
         app.get("/services", async (req, res) => {
             let query = {}
             const limit = parseInt(req.query.limit)
-            console.log(limit)
+            // console.log(limit)
             if (limit) {
                 const cursor = servicesCollection.find(query).sort({ date: -1 }).limit(limit)
                 const result = await cursor.toArray()
@@ -45,7 +46,7 @@ const run = async () => {
         })
         app.post("/addService", async (req, res) => {
             const service = req.body
-            console.log(service)
+
             const result = await servicesCollection.insertOne(service)
             res.send(result)
         })
