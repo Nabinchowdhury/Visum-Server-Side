@@ -103,11 +103,29 @@ const run = async () => {
             res.send(result)
 
         })
-
+        app.get("/reviews/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await reviewsCollection.findOne(query)
+            res.send(result)
+        })
         app.delete("/reviews/:id", async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const result = await reviewsCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.patch("/reviews/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const reviewMsg = req.body.reviewMsg
+            // console.log(reviewMsg)
+            const updatedMsg = {
+                $set: {
+                    reviewMsg: reviewMsg
+                }
+            }
+            const result = await reviewsCollection.updateOne(query, updatedMsg)
             res.send(result)
         })
 
