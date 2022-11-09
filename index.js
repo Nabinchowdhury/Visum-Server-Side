@@ -67,10 +67,16 @@ const run = async () => {
         })
         app.get("/reviews", async (req, res) => {
             let query = {}
+            const service = req.query.service
+            const email = req.query.email
+            if (service) {
+                query = { service_id: service }
+                const cursor = reviewsCollection.find(query).sort({ date: -1 })
+                const result = await cursor.toArray()
+                // console.log(result)
+                res.send(result)
+            }
 
-            const cursor = servicesCollection.find(query).sort({ date: -1 })
-            const result = await cursor.toArray()
-            res.send(result)
 
         })
 
