@@ -23,6 +23,22 @@ const uri = process.env.DB_URL;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization
+    // console.log(authHeader)
+    if (!authHeader) {
+        return res.status(401).send({ message: "Unauthorized Credentials" })
+    }
+    const token = authHeader.split(" ")[1]
+    jwt.verify(token, process.env.Access_Token_Secret, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: "Unauthorized Access" })
+        }
+        req.decoded = decoded
+    })
+    next()
+}
+
 const run = async () => {
     try {
         const servicesCollection = client.db("b6a11_serviceDB").collection("services")
@@ -31,7 +47,7 @@ const run = async () => {
 
         app.post("/jwt", (req, res) => {
             const user = req.body
-            const token = jwt.sign(user, process.env.Access_Token_Secret)
+            const token = jwt.sign(user, process.env.Access_Token_Secret, { expiresIn: "1d" })
 
             res.send({ token })
         })
@@ -60,7 +76,6 @@ const run = async () => {
 
         app.get("/services/:id", async (req, res) => {
             const id = req.params.id
-
             const query = { _id: ObjectId(id) }
             const result = await servicesCollection.findOne(query)
             res.send(result)
@@ -72,19 +87,28 @@ const run = async () => {
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
         })
-        app.get("/reviews", async (req, res) => {
+        app.get("/reviews", verifyToken, async (req, res) => {
             let query = {}
             const service = req.query.service
             const email = req.query.email
             if (service) {
                 query = { service_id: service }
-                const cursor = reviewsCollection.find(query).sort({ date: -1 })
-                const result = await cursor.toArray()
-                // console.log(result)
-                res.send(result)
             }
+            if (email) {
+                query = { reviewer_email: email }
+            }
+            const cursor = reviewsCollection.find(query).sort({ date: -1 })
+            const result = await cursor.toArray()
+            // console.log(result)
+            res.send(result)
 
+        })
 
+        app.delete("/reviews/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await reviewsCollection.deleteOne(query)
+            res.send(result)
         })
 
     } finally {
