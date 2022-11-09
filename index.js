@@ -65,6 +65,14 @@ const run = async () => {
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
         })
+        app.get("/reviews", async (req, res) => {
+            let query = {}
+
+            const cursor = servicesCollection.find(query).sort({ date: -1 })
+            const result = await cursor.toArray()
+            res.send(result)
+
+        })
 
     } finally {
 
