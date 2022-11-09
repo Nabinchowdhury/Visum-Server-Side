@@ -29,6 +29,13 @@ const run = async () => {
         const reviewsCollection = client.db("b6a11_serviceDB").collection("reviews")
 
 
+        app.post("/jwt", (req, res) => {
+            const user = req.body
+            const token = jwt.sign(user, process.env.Access_Token_Secret)
+
+            res.send({ token })
+        })
+
         app.get("/services", async (req, res) => {
             let query = {}
             const limit = parseInt(req.query.limit)
